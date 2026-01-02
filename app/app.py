@@ -1,4 +1,3 @@
-cat <<EOF > app/app.py
 import os
 
 API_KEY = os.environ.get("API_KEY")
@@ -9,4 +8,4 @@ def connect():
 
 if __name__ == "__main__":
     connect()
-EOF
+
