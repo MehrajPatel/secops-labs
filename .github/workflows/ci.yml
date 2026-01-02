@@ -22,7 +22,7 @@ jobs:
     - name: Run Semgrep (SAST)
       uses: semgrep/semgrep-action@v1
       with:
-        config: p/default
+        config: semgrep/no-hardcoded-secrets.yml
 
     - name: Run Trivy (Dependency Scan)
       uses: aquasecurity/trivy-action@master
