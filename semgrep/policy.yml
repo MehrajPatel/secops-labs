@@ -1,0 +1,7 @@
+rules:
+  - id: no-print-statements
+    languages:
+      - python
+    severity: ERROR
+    message: "Use structured logging instead of print()"
+    pattern: print(...)
