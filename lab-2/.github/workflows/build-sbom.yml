@@ -1,0 +1,70 @@
+name: build-and-sbom
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build image
+      run: docker build -t supplychain-demo:${{ github.sha }} .
+
+    - name: Generate SBOM
+      run: |
+        syft supplychain-demo:${{ github.sha }} \
+          -o spdx-json > sbom.spdx.json
+
+    - name: Upload SBOM
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: sbom.spdx.json
+
+    - name: Sign image
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      run: |
+        echo "$COSIGN_PRIVATE_KEY" > cosign.key
+        cosign sign --key cosign.key supplychain-demo:${{ github.sha }}
+
+    - name: Generate provenance
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      run: |
+        echo "$COSIGN_PRIVATE_KEY" > cosign.key
+
+        cosign attest \
+          --key cosign.key \
+          --type slsaprovenance \
+          --predicate <(cat <<EOF
+        {
+          "buildType": "github-actions",
+          "builder": {
+            "id": "${{ github.workflow }}"
+          },
+          "invocation": {
+            "parameters": {
+              "repository": "${{ github.repository }}",
+              "ref": "${{ github.ref }}"
+            }
+          },
+          "materials": [
+            {
+              "uri": "git+https://github.com/${{ github.repository }}",
+              "digest": {
+                "sha1": "${{ github.sha }}"
+              }
+            }
+          ]
+        }
+        EOF
+        ) \
+        pateldevsecops/supplychain-demo@${{ steps.build.outputs.digest }}
+
