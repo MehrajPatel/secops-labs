@@ -21,11 +21,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Run Semgrep
-        run: |
-          pwd
-          
+   
       - name: Run Semgrep
         run: |
           # --config auto: uses Semgrep Registry rules
