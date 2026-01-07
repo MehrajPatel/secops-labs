@@ -26,6 +26,7 @@ jobs:
         run: |
           # 'semgrep ssc scan' focuses on Supply Chain (SCA)
           # We use --error to fail the build if high-severity CVEs are found
+          pwd
           cd ../../semgrep-SCA
           semgrep scan --library --error
         env:
