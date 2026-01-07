@@ -1,0 +1,30 @@
+name: Semgrep SAST Scan
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: '0 0 * * 1' # Run weekly on Mondays
+
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-latest
+    # Skip scan if it's a documentation-only change
+    if: (github.actor != 'dependabot[bot]')
+    
+    container:
+      image: returntocorp/semgrep
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          # --config auto: uses Semgrep Registry rules
+          # --config .semgrep/: uses our local custom rules
+          # --error: fail the build if "ERROR" severity issues are found
+          semgrep scan --config auto --config .semgrep/ --error

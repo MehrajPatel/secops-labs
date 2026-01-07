@@ -1,0 +1,11 @@
+rules:
+  - id: detect-hardcoded-api-key
+    patterns:
+      - pattern: |
+          API_KEY = "$VALUE"
+      - metavariable-regex:
+          metavariable: "$VALUE"
+          regex: "SK-[0-9]{5}-.*"
+    message: "Critical: Hardcoded API Key detected! Use environment variables instead."
+    languages: [python]
+    severity: ERROR
