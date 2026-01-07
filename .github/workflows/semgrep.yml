@@ -24,6 +24,10 @@ jobs:
 
       - name: Run Semgrep
         run: |
+          pwd
+          
+      - name: Run Semgrep
+        run: |
           # --config auto: uses Semgrep Registry rules
           # --config ../../semgrep-SAST/.semgrep/: uses our local custom rules
           # --error: fail the build if "ERROR" severity issues are found
