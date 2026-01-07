@@ -1,0 +1,34 @@
+name: Semgrep SCA Scan
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  semgrep_sca:
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    
+    # Required for Semgrep to post comments on PRs
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep SCA
+        run: |
+          # 'semgrep ssc scan' focuses on Supply Chain (SCA)
+          # We use --error to fail the build if high-severity CVEs are found
+          cd ../semgrep-sca
+          semgrep scan --library --error
+        env:
+          # Optional: Get a free token at semgrep.dev to see the full SCA dashboard
+          # SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          pass: true

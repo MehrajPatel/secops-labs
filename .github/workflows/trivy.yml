@@ -1,0 +1,40 @@
+name: Trivy Security Scan
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  trivy_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Scan Repository for OS/Library vulnerabilities (SCA)
+      - name: Run Trivy FS scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          exit-code: '1' # Fail the build if vulnerabilities are found
+          severity: 'CRITICAL,HIGH'
+
+      # 2. Scan Infrastructure as Code (Terraform & Dockerfile misconfigs)
+      - name: Run Trivy Config scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
+      # 3. Scan the Dockerfile Base Image specifically
+      # Note: This scans the image instructions, not the built image.
+      - name: Run Trivy Image scan (instructions)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'dockerfile'
+          scan-ref: 'Dockerfile'
+          exit-code: '0' # Set to 0 to see results without failing build initially
