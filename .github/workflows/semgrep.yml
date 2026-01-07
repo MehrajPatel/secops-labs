@@ -25,6 +25,6 @@ jobs:
       - name: Run Semgrep
         run: |
           # --config auto: uses Semgrep Registry rules
-          # --config ../../semrep-SAS/semgrep/: uses our local custom rules
+          # --config ../../semgrep-SAST/.semgrep/: uses our local custom rules
           # --error: fail the build if "ERROR" severity issues are found
-          semgrep scan --config auto --config ./semrep-SAST/semgrep/ --error
+          semgrep scan --config auto --config ../../semgrep-SAST/.semgrep/ --error
