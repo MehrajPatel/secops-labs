@@ -1,0 +1,8 @@
+# Vulnerable to CVE-2023-32681 (Information Leakage)
+requests==2.30.0
+
+# Vulnerable to CVE-2023-30861 (Session Cookie leakage)
+Flask==2.2.0
+
+# Vulnerable to multiple CVEs
+cryptography==3.4.7
