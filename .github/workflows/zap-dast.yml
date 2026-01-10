@@ -20,7 +20,7 @@ jobs:
           python-version: '3.9'
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r ./DAST/requirements.txt
 
       # 1. Start the application in the background
       - name: Start Web App
