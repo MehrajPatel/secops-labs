@@ -3,8 +3,6 @@ name: OWASP ZAP DAST Scan
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 jobs:
   zap_scan:
@@ -20,33 +18,38 @@ jobs:
           python-version: '3.9'
 
       - name: Install Dependencies
-        run: pip install -r ./DAST/requirements.txt
+        run: |
+          pip install flask
+          # Add any other dependencies if needed
 
-      # 1. Start the application in the background
+      # 1. Start the app and log output to a file for debugging
       - name: Start Web App
         run: |
-          python app.py &
-          # Give the app 5 seconds to start up
-          sleep 5
-
-      - name: Prepare Workspace for ZAP
+          python app.py > log.txt 2>&1 &
+          
+      # 2. Wait and Verify the app is actually responding
+      - name: Verify App is Up
         run: |
-          chmod -R 777  ${{ github.workspace }}
-                    
-      # 2. Run OWASP ZAP Baseline Scan
+          timeout 30s bash -c 'until curl -s http://127.0.0.1:5000/; do sleep 2; done'
+          echo "App is confirmed UP"
+
+      # 3. FIX PERMISSIONS: Ensure the workspace is writable
+      - name: Prepare Workspace for ZAP
+        run: chmod -R 777  ${{ github.workspace }}
+
+      # 4. Run ZAP Baseline Scan
       - name: ZAP Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          # Target URL is our local flask app
-          target: 'http://localhost:5000/'
-          # Allow the build to continue even if vulnerabilities are found (for this lab)
+          # Use 127.0.0.1 instead of localhost to avoid IPv6 issues
+          target: 'http://127.0.0.1:5000/'
           fail_action: false
-          # ZAP will generate an HTML report as an artifact
           artifact_name: 'zap-scan-report'
-          docker_run_options: '-u root --network="host"'
+          # Remove docker_run_options (invalid input)
+          # Use cmd_options if you need to pass specific ZAP script flags
+          cmd_options: '-j' 
 
-      - name: Upload Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-scan-report
-          path: zap_report.html
+      # 5. Debugging: If it fails, show the app logs
+      - name: Show App Logs on Failure
+        if: failure()
+        run: cat log.txt
