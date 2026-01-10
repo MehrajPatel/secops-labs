@@ -34,7 +34,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./SSCS/
           push: true
           # Lowercase the repo name for GHCR
           tags: ghcr.io/mehrajpatel/secops-labs:latest
