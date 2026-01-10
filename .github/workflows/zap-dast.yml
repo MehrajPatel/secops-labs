@@ -29,6 +29,10 @@ jobs:
           # Give the app 5 seconds to start up
           sleep 5
 
+      - name: Prepare Workspace for ZAP
+        run: |
+          chmod -R 777  ${{ github.workspace }}
+                    
       # 2. Run OWASP ZAP Baseline Scan
       - name: ZAP Scan
         uses: zaproxy/action-baseline@v0.12.0
@@ -39,3 +43,10 @@ jobs:
           fail_action: false
           # ZAP will generate an HTML report as an artifact
           artifact_name: 'zap-scan-report'
+          docker_run_options: '-u root --network="host"'
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-report
+          path: zap_report.html
