@@ -37,14 +37,14 @@ jobs:
           context: .
           push: true
           # Lowercase the repo name for GHCR
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/mehrajpatel/secops-labs:latest
 
       # 4. Keyless Signing with Cosign
       # This uses the GitHub OIDC token to get a certificate from Fulcio
       - name: Sign the image
         run: |
           cosign sign --yes \
-            ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
+            ghcr.io/mehrajpatel/secops-labs@${{ steps.build-and-push.outputs.digest }}
 
       # 5. Verify the Signature
       # We check that the image was signed by this specific GitHub Workflow
