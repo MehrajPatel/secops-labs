@@ -50,6 +50,6 @@ jobs:
       # We check that the image was signed by this specific GitHub Workflow
       - name: Verify the signature
         run: |
-          cosign verify ghcr.io/${{ github.repository }}:latest \
+          cosign verify ghcr.io/mehrajpatel/secops-labs:latest \
             --certificate-identity-regexp "https://github.com/${{ github.repository_owner }}/.*" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
