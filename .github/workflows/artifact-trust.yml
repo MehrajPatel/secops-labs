@@ -1,0 +1,55 @@
+name: Artifact Trust (Keyless Signing)
+
+on:
+  push:
+    branches: ["main"]
+
+# IMPORTANT: Permissions required for OIDC and Registry access
+permissions:
+  contents: read
+  packages: write
+  id-token: write # Required for keyless signing identity
+
+jobs:
+  build-sign-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Install Cosign (Sigstore tool)
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.4.0
+
+      # 2. Login to GitHub Container Registry
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. Build and Push Image
+      - name: Build and Push
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # Lowercase the repo name for GHCR
+          tags: ghcr.io/${{ github.repository }}:latest
+
+      # 4. Keyless Signing with Cosign
+      # This uses the GitHub OIDC token to get a certificate from Fulcio
+      - name: Sign the image
+        run: |
+          cosign sign --yes \
+            ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
+
+      # 5. Verify the Signature
+      # We check that the image was signed by this specific GitHub Workflow
+      - name: Verify the signature
+        run: |
+          cosign verify ghcr.io/${{ github.repository }}:latest \
+            --certificate-identity-regexp "https://github.com/${{ github.repository_owner }}/.*" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
