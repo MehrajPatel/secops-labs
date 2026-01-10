@@ -28,7 +28,8 @@ jobs:
           # We use --error to fail the build if high-severity CVEs are found
           pwd
           cd ./semgrep-SCA
-          semgrep scan --library --error
+          semgrep scan -l python --error
+
         env:
           # Optional: Get a free token at semgrep.dev to see the full SCA dashboard
           # SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
