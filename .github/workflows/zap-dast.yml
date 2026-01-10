@@ -1,0 +1,41 @@
+name: OWASP ZAP DAST Scan
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    name: Scan the web application
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      # 1. Start the application in the background
+      - name: Start Web App
+        run: |
+          python app.py &
+          # Give the app 5 seconds to start up
+          sleep 5
+
+      # 2. Run OWASP ZAP Baseline Scan
+      - name: ZAP Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          # Target URL is our local flask app
+          target: 'http://localhost:5000/'
+          # Allow the build to continue even if vulnerabilities are found (for this lab)
+          fail_action: false
+          # ZAP will generate an HTML report as an artifact
+          artifact_name: 'zap-scan-report'
